@@ -1,0 +1,105 @@
+{
+    "pages": [
+        {
+            "path": "pages/home/home",
+            "style": {
+                "navigationStyle": "custom",
+                "navigationBarTitleText": "时光寄"
+            }
+        },
+        {
+            "path": "pages/teachers/teachers",
+            "style": {
+                "navigationBarTitleText": "老师名录",
+                "navigationBarBackgroundColor": "#FAF6F0",
+                "navigationBarTextStyle": "black",
+                "backgroundColor": "#FAF6F0"
+            }
+        },
+        {
+            "path": "pages/teacher-edit/teacher-edit",
+            "style": {
+                "navigationBarTitleText": "写一封信给未来",
+                "navigationBarBackgroundColor": "#FAF6F0",
+                "navigationBarTextStyle": "black",
+                "backgroundColor": "#FAF6F0"
+            }
+        },
+        {
+            "path": "pages/profile/profile",
+            "style": {
+                "navigationStyle": "custom",
+                "navigationBarTitleText": "我的档案卡"
+            }
+        },
+        {
+            "path": "pages/invite/invite",
+            "style": {
+                "navigationBarTitleText": "邀请老师",
+                "navigationBarBackgroundColor": "#FAF6F0",
+                "navigationBarTextStyle": "black",
+                "backgroundColor": "#FAF6F0"
+            }
+        },
+        {
+            "path": "pages/login/login",
+            "style": {
+                "navigationStyle": "custom"
+            }
+        },
+        {
+            "path": "pages/teacher-welcome/teacher-welcome",
+            "style": {
+                "navigationStyle": "custom"
+            }
+        },
+        {
+            "path": "pages/teacher-write/teacher-write",
+            "style": {
+                "navigationBarTitleText": "写点什么给 TA",
+                "navigationBarBackgroundColor": "#FAF6F0",
+                "navigationBarTextStyle": "black",
+                "backgroundColor": "#FAF6F0"
+            }
+        },
+        {
+            "path": "pages/teacher-done/teacher-done",
+            "style": {
+                "navigationStyle": "custom"
+            }
+        }
+    ],
+    "globalStyle": {
+        "navigationBarTextStyle": "black",
+        "navigationBarTitleText": "时光寄",
+        "navigationBarBackgroundColor": "#FAF6F0",
+        "backgroundColor": "#FAF6F0"
+    },
+    "tabBar": {
+        "color": "#B8A68B",
+        "selectedColor": "#8B6F47",
+        "backgroundColor": "#FAF6F0",
+        "borderStyle": "white",
+        "list": [
+            {
+                "pagePath": "pages/home/home",
+                "text": "首页",
+                "iconPath": "static/tabbar/home.png",
+                "selectedIconPath": "static/tabbar/home-active.png"
+            },
+            {
+                "pagePath": "pages/teachers/teachers",
+                "text": "老师",
+                "iconPath": "static/tabbar/teacher.png",
+                "selectedIconPath": "static/tabbar/teacher-active.png"
+            },
+            {
+                "pagePath": "pages/profile/profile",
+                "text": "我",
+                "iconPath": "static/tabbar/me.png",
+                "selectedIconPath": "static/tabbar/me-active.png"
+            }
+        ]
+    },
+    "condition": { "current": 0, "list": [] }
+}
