@@ -26,7 +26,8 @@
 </template>
 
 <script setup>
-import { ref, onLoad } from '@dcloudio/uni-app'
+import { ref } from 'vue'
+import { onLoad } from '@dcloudio/uni-app'
 import cloud from '@/utils/cloud.js'
 
 const data = ref(null)
