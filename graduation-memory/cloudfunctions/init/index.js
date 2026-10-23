@@ -1,27 +1,27 @@
 /**
- * 时光寄云函数集合
+ * 时光寄 · 云函数集合
  * ============================================================
- * 部署方式：
- *   1. 微信开发者工具里打开云开发控制台，创建环境
- *   2. 修改 manifest.json 中 mp-weixin.cloud: true
- *   3. 右键当前目录 · 上传并部署（云端安装依赖）
- *   4. 在云数据库里创建三张集合，并设置权限规则
- *
- * 集合权限规则（重点！保证老师间隔离）：
- * ------------------------------------------------------------
- * users:      { "read": "_openid == auth.openid", "write": "_openid == auth.openid" }
- * teachers:   { "read": "_openid == auth.openid", "write": "_openid == auth.openid" }
- * memories:   { "read": "_openid == auth.openid", "write": "_openid == auth.openid" }
- * responses:  { "read": "auth.openid in [studentOpenid, _openid]",
- *               "write": "_openid == auth.openid" }
- *              ↑ 这里的 _openid 是老师的 openid（通过 token 识别后写入）
- * ------------------------------------------------------------
+ * 所有业务 action 共用这一份云函数，减少部署体积。
+ * 首次部署完成后，在开发者工具或控制台手动调用一次：
+ *   cloud.callFunction({ name: 'init', data: { action: 'initSchema' } })
+ * 即可自动创建 4 张集合 + 关键索引。
+ * ============================================================
  */
 
 const cloud = require('wx-server-sdk')
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 const db = cloud.database()
 const _ = db.command
+
+// 集合定义（initSchema action 自动创建）
+const COLLECTIONS = ['users', 'teachers', 'memories', 'responses']
+
+// 关键索引（字段按 query 频率排序）
+const INDEXES = {
+    teachers:  [{ fields: { _openid: 1 } }, { fields: { inviteToken: 1 } }],
+    memories:  [{ fields: { teacherId: 1 } }, { fields: { _openid: 1 } }],
+    responses: [{ fields: { teacherId: 1 } }, { fields: { studentOpenid: 1 } }]
+}
 
 // 邀请码（6位大写字母+数字，避开易混字符）
 function genToken() {
@@ -37,6 +37,41 @@ exports.main = async (event, context) => {
     const action = event.action
 
     try {
+        // ==== 首次部署：创建集合 + 索引 ====
+        // 开发者工具里右键 init 云函数 → 云端测试 → 传入 { "action": "initSchema" }
+        if (action === 'initSchema') {
+            const result = { collections: [], indexes: [] }
+
+            for (const name of COLLECTIONS) {
+                try {
+                    await db.createCollection(name)
+                    result.collections.push(name + ' ✓')
+                } catch (e) {
+                    // 集合已存在时忽略
+                    result.collections.push(name + ' (已存在)')
+                }
+            }
+
+            for (const [col, idxList] of Object.entries(INDEXES)) {
+                for (let i = 0; i < idxList.length; i++) {
+                    const idx = idxList[i]
+                    const idxName = `${col}_idx_${Object.keys(idx.fields).join('_')}`
+                    try {
+                        await db.collection(col).createIndex({
+                            keys: idx.fields,
+                            name: idxName,
+                            unique: false
+                        })
+                        result.indexes.push(`${col}/${idxName} ✓`)
+                    } catch (e) {
+                        result.indexes.push(`${col}/${idxName} (已存在)`)
+                    }
+                }
+            }
+
+            return { code: 0, data: result }
+        }
+
         // ==== 登录（用 openid 当用户唯一标识） ====
         if (action === 'login') {
             let user = await db.collection('users').where({ _openid: openid }).get()
