@@ -1,0 +1,515 @@
+机器人ROS基础与实践
+第一章 ROS2 核心概念
+目录
+
+
+
+     1. 初识ROS
+
+     2. ROS2 vs ROS1
+
+     3. ROS2核心概念
+
+     4. ROS2安装方法
+
+     5. ROS2体验：小海龟仿真
+1. 初识 ROS
+1.1 ROS的诞生
+
+
+
+
+             ROS中元老机器人--PR2
+1.1 什么是ROS？
+
+➢ ROS（Robot Operating System，机器人操作系统） 是一款面向机器人的开源元操
+ 作系统。
+
+➢ 它具备传统操作系统所能提供的各类基础服务，包含硬件抽象、底层设备控制、通用
+ 功能实现、进程间消息传输以及软件包管理等。
+
+➢ ROS并非底层操作系统，而是一套面向机器人开发的分布式软件中间件与工具生态。
+ 它提供标准化节点通信框架、硬件驱动、可视化、定位建图等通用功能，把感知、控
+ 制、规划模块化解耦，开发者无需重复开发底层通信逻辑，可快速复用开源算法，适
+ 配轮式、足式、机械臂等各类机器人。
+
+➢ ROS2是面向实时、多平台的新一代ROS迭代版本。
+  1.2 为什么选择ROS？
+➢ 提高机器人研发的软件复用率
+
+(1) 点对点的设计
+
+(2) 多语言支持
+
+(3) 架构精简、集成度高
+
+(4) 组件化工具包、功能包丰富
+
+(5) 免费并且开源
+                       传统模式          现代模式
+
+
+
+
+                通信机制   开发工具   应用功能     生态系统
+1.2 为什么选择ROS？
+
+➢ 松耦合分布式通信
+  ➢ 松耦合：节点间无直接依赖，靠标准化消息接口交互，独立启停互不干扰
+  ➢ 分布式：底层基于网络协议、代码不区分本机 / 跨机、支持多设备局域网组网透明通信
+ 1.2 为什么选择ROS？
+➢ 丰富的组件化工具包
+
+   colcon build/clean
+source install/setup.bash
+   ros2 pkg list/prefix
+         ros2 run
+       ros2 launch
+                            TF坐标变换   Qt 工具箱
+   ros2 node list/info
+ ros2 topic list/echo/pub
+   ros2 service list/call
+   ros2 interface show
+            ……
+
+      命令行&编译器                 RViz   Gazebo
+ 1.2 为什么选择ROS？
+➢ 丰富的功能包
+
+
+
+
+           Navigation
+
+
+
+
+                        Movelt!
+
+              SLAM
+ 1.2 为什么选择ROS？
+➢ 完善的生态
+
+
+
+
+          Powering the worldʼs robots! ——机器人领域的普遍标准
+ 1.2 为什么选择ROS？
+➢ ROS社区的繁荣
+
+
+
+
+     每个月基本有250万左右的访问量，已经是一个活跃度非常棒的社区
+2. ROS2 vs ROS1
+2.1 ROS的发展历程
+2.1 ROS的发展历程
+2.2 ROS1局限性根源
+2.2 ROS1局限性根源
+2.2 ROS2 全新的ROS
+
+
+
+               •   ROS1的架构下，所有节点需要使Master进行管理
+    架构的颠覆
+               •   ROS2使用基于DDS的Discovery机制，Master说拜拜
+
+
+
+               •   ROS1中的大部分代码都基于2009年2月设计的API
+    API的重新设计
+               •   ROS2重新设计了用户API，但使用方法类似
+
+
+
+
+               •   ROS1使用rosbuild、catkin管理项目
+    架构的颠覆
+               •   ROS2使用升级版的ament、colcon
+2.3 ROS2 vs ROS1 核心差异—架构
+2.3 ROS2 vs ROS1 核心差异—DDS
+2.3 ROS2 vs ROS1 核心差异—DDS
+2.3 ROS2 vs ROS1 核心差异
+
+  对比维度           ROS1 (Noetic)            ROS2 (Humble)
+
+               XMLRPC + TCPROS，   DDS（Data Distribution Service），
+ 通信中间件
+                 中心化 Master             去中心化自动发现
+
+   实时性            弱，无 QoS              强，支持 QoS + 实时内核
+
+   跨平台             Linux 为主        Linux / Windows / macOS / RTOS
+
+   安全性             无加密认证               SROS2、加密、访问控制
+
+  节点管理            需要 roscore           无需 Master，自动发现
+
+ 生态成熟度             历史包丰富              导航/SLAM/驱动主流已迁移
+         2.4 ROS2发行版本
+
+
+
+
+Distributions — ROS 2 Documentation: Humble documentation
+3. ROS2核心概念
+3.1 节点 (Node)
+➢ 节点 (Node) 是机器人系统里一个独立的小功能模块
+➢ 每个节点通常聚焦于某一个功能，比如相机驱动、激光雷达驱动、定位、导航、显示等
+➢ 节点之间不直接调用对方，而是通过话题（Topic）、服务（Service）、动作（Action）、参数
+  （Parameters）等互相通信
+➢ 节点可以单独启动、单独关闭、单独调试，让机器人系统变得模块化、易维护
+
+
+
+
+             Understanding nodes — ROS 2 Documentation: Humble
+    3.2 话题（Topic）
+
+➢ 话题（Topic）是 ROS2 节点之间 “单向、持续、
+  异步” 传递数据的通道
+➢ 节点通过发布（Publish）往Topic发数据
+➢ 其他节点通过订阅（Subscribe）从Topic收数据
+➢ 发布者和订阅者互相不知道对方存在，解耦、灵活
+➢ 一个Topic只能传一种固定消息类型（如 Image、
+  LaserScan），常用于传感器数据、状态、视频流
+  等持续数据流
+➢ Topic可以是一对一、一对多、多对一、多对多的
+
+
+
+Understanding topics — ROS 2 Documentation: Humble
+documentation
+   3.3 服务 (Service)
+
+➢ 服务 (Service) —— 同步通信机制
+➢ 使用客户端/服务器 (C/S) 模型，客户端发
+  送请求数据，服务器完成处理后返回应答
+  数据
+➢ 使用编程语言无关的.srv文件定义请求和应
+  答数据结构，编译过程中生成对应的代码
+  文件
+➢ 同一个服务，可以有多个客户端，但一个
+  服务只能有一个服务器端。
+
+
+
+
+  Understanding services — ROS 2 Documentation: Humble
+  documentation
+3.4 动作（Action）
+➢ Action专门面向长时间运行的机器人任务，基于 Topic 和 Service 底层实现，是服务的增强版
+➢ Action 三大核心组成
+   ➢   Goal（目标）：客户端向服务器下发的任务指令（如“旋转到 1.57 弧度”、“导航到目标点”）
+   ➢   Feedback（实时反馈）：任务执行过程中，服务器周期性推送的进度信息（如“剩余旋转角度”、“当前
+       距离目标点距离”）
+   ➢   Result（最终结果）：任务完成后返回的一次性最终输出（如“总旋转角度差”、“是否到达目标”）
+
+
+
+
+                                       Understanding actions — ROS 2
+                                       Documentation: Humble
+                                       documentation
+   3.5 参数
+
+➢ 参数（Parameter）是节点的配置项，你可以把参
+                                                                     终端命令行工具
+    数理解成节点的配套参数系统，用于定义运行配置                                    •    ros2 param list/get/set
+➢ 节点支持存储整数、浮点数、布尔值、字符串、列
+    表类型的参数
+➢ 在 ROS2 中，每个节点独立维护自己的一套参数，                                           运行中的节点
+                                                                      • 可读写参数
+    互不干扰                                                          • 只读参数（仅启动时生效）
+➢ 你可以通过命令行工具随时读取、修改参数
+➢ 也能将整套配置导出为 yaml 文件保存，下次启动
+    节点直接加载复用                                                        YAML参数文件
+                                                               • ros2 param dump 导出
+                                                                • ros2 param load 加载
+                                                         •   ros2 run ... --params-file启动时加
+Understanding parameters — ROS 2 Documentation: Humble                        载
+documentation
+3.6 四种通信方式的对比
+
+通信/配置方式          主要特点                典型适用场景
+
+            ➢ 异步无阻塞通信，面向高频、   ➢ 传感器数据（激光雷达、相机、IMU）
+  Topic
+              单向、实时的数据流传输，是     、机器人状态广播、全局控制指令下发
+   话题
+              ROS中最基础的通信方式。     等场景。
+
+            ➢ 同步阻塞通信，适用于一次性
+ Service                      ➢ 触发机器人复位、生成地图实体、查询
+              、简短的指令调用与状态查询
+  服务                            单次关节状态、参数获取确认等场景。
+              ，强调请求与结果的强关联。
+
+            ➢ 处理需要长时间执行的机器人   ➢ 自主导航到目标点、机械臂关节运动规
+ Action
+              任务，兼顾异步执行与过程可     划、机器狗步态调整、长时间自主巡检
+  动作
+              控性。               等场景。
+
+            ➢ 用于管理节点运行时的配置参   ➢ 设置机器人背景色、调整传感器量程阈
+Parameter
+              数，实现程序逻辑与配置数据     值、配置算法参数、修改QoS策略等场
+   参数
+              的分离。              景。
+3.7 DDS
+
+
+
+
+          DDS的核心是通信，图为常用的四种通信模型。
+3.8 消息类型
+➢ ROS2 消息类型（Message Type）是节点之间通信的数据规范，规定了话题、服务、动作传输数
+  据的字段名称、数据类型、结构
+➢ 节点收发数据必须严格匹配同一种消息类型，否则无法通信
+➢ 可以在 /opt/ros/humble/share 里查看ros2内置的消息类型包
+➢ 也可以通过命令 ros2 interface list 查看更完整的内置消息类型
+➢ 支持自定义消息类型
+3.8 消息类型
+                                 Bool
+                                 Byte
+                                 Char
+                                 String
+                         基础类型    Int8/16/32/64
+            std_msgs             UInt8/16/32/64
+            标准消息包                Float32、Float64
+                                 Empty
+
+
+                                 ByteMultiArray
+                                 Int8/16/32/64MultiArray
+ROS消息包                   数组类型    UInt8/16/32/64MultiArray
+                                 Float32/64MultiArray
+
+
+           common_msgs           ColorRGBA
+             常用消息包               Duration
+                                 Time
+                         结构体类型   Header
+                                 MultiArrayDimension
+                                 MultiArrayLayout
+3.8 消息类型                   actionlib_msgs
+                             行为消息包
+
+                           diagnostic_msgs
+                              诊断消息包
+
+              std_msgs     geometry_msgs
+              标准消息包          几何消息包
+
+                             nav_msgs
+                             导航消息包
+
+    ROS消息包                  sensor_msgs
+                            传感器消息包
+
+                             shape_msgs
+             common_msgs      形状消息包
+               常用消息包
+                            stereo_msgs
+                           双目视觉消息包
+
+                           trajectory_msgs
+                            运动轨迹消息包
+  3.8 消息类型
+                                     Accel、AccelStamped、AccelWithCovariance、
+                              加速度
+                                     AccelWithCovarianceStamped
+
+                              惯量     Inertia、InertiaStamped
+
+                              空间点    Point、Point32、PointStamped
+
+                              多边形    Polygon、PolygonStamped
+
+                                     Pose、Pose2D、PoseArray、PoseStamped、
+                              空间位置   PoseWithCovariance、
+common_msgs   geometry_msgs
+                                     PoseWithCovarianceStamped
+  常用消息包         几何消息包
+                              四元数    Quaternion、QuaternionStamped
+
+                              空间变换   Transform、TransformStamped
+
+                                     Twist、TwistStamped、TwistWithCovariance、
+                              空间方向
+                                     TwistWithCovarianceStamped
+
+                              三维矢量   Vector3、Vector3Stamped
+
+                              扭矩     Wrench、WrenchStamped
+4. ROS2安装方法
+1.1 Linux系统简介
+    1.2 Ubuntu系统安装
+
+
+➢   Ubuntu是一个社区开发的基于Linux 的操作系统，适合笔记本、桌面计算机和
+    服务器使用。它包含了常用的应用程序一一网页浏览器、幻灯片演示、文档编
+    辑和电子表格软件，即时通讯软件等等。
+
+➢   其名称来自非洲南部祖鲁语或豪萨语的“ubuntu"一词，意思是“人性”“我
+    的存在是因为大家的存在"，是非洲传统的一种价值观。
+
+➢   2004年10月，Ubuntu 的第一个版本正式发布。此后Ubuntu每六个月发布一
+    个新版本，用户可以免费升级到最新版本。Ubuntu的命名遵从“Y.MM(开发代
+    号)"格式，Y代表年份，MM代表月份。
+
+➢   每一个普通版本都将被支持18个月，长期支持版(LongTerm Support，LTS)通
+    常支持5年时间。。
+    1.3 Ubuntu虚拟机安装
+
+
+
+
+➢   Ubuntu镜像下载地址: https://ubuntu.com/download/desktop
+
+➢   VMware Workstation Pro: https://www.vmware.com/products/workstation-pro/workstation-pro-evaluation.html
+1.3 Ubuntu虚拟机安装
+ 1. 下载系统镜像
+
+
+
+
+ ➢   下载链接：https://ubuntu.com/download/desktop
+1.3 Ubuntu虚拟机安装
+ 2. 在虚拟机中创建系统
+1.3 Ubuntu虚拟机安装
+ 3.设置虚拟机硬盘大小
+1.3 Ubuntu虚拟机安装
+ 4.设置Ubuntu镜像路径
+1.3 Ubuntu虚拟机安装
+ 5.启动虚拟机
+1.3 Ubuntu虚拟机安装
+ 6.设置用户名和密码
+1.3 Ubuntu虚拟机安装
+ 7.等待系统安装
+1.3 Ubuntu虚拟机安装
+ 8.完成安装
+1.4 安装ROS2
+
+             $ sudo apt update && sudo apt install locales
+设置编码         $ sudo locale-gen en_US en_US.UTF-8
+             $ sudo update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+             $ export LANG=en_US.UTF-8
+
+
+             $ sudo apt update && sudo apt install curl gnupg lsb-release
+             $ sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o
+             /usr/share/keyrings/ros-archive-keyring.gpg
+添加源          $ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-
+             keyring.gpg] http://packages.ros.org/ros2/ubuntu $(source /etc/os-release && echo
+             $UBUNTU_CODENAME) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
+
+             $ sudo apt update
+安装ROS2       $ sudo apt upgrade
+             $ sudo apt install ros-humble-desktop
+
+
+             $ source /opt/ros/humble/setup.bash
+设置环境变量       $ echo " source /opt/ros/humble/setup.bash" >> ~/.bashrc
+     1.5 ROS2示例测试
+
+命令行示例
+$ ros2 run demo_nodes_cpp talker                           $ ros2 run demo_nodes_py listener
+
+
+
+
+                        $ ros2 run demo_nodes_cpp talker
+1.5 ROS2示例测试
+小海龟仿真示例
+启动两个终端，分别运行如下指令：
+$ ros2 run turtlesim turtlesim_node
+$ ros2 run turtlesim turtle_teleop_key
+5. ROS2体验：小海龟仿真
+ 4. ROS2体验：小海龟仿真
+
+➢ 功能包安装
+
+  $ sudo apt install ros-humble-turtlesim
+
+
+➢ 启动小海龟仿真节点
+
+  $ ros2 run turtlesim turtlesim_node
+
+
+➢ 启动小海龟控制节点
+
+  $ ros2 run turtlesim turtle_teleop_key
+  4. ROS2体验：小海龟仿真
+
+➢ 查看相关信息
+
+
+  $ ros2 node list
+  $ ros2 topic list
+  $ ros2 service list
+  $ ros2 action list
+
+  $ ros2 node info <node>
+  $ ros2 topic echo <topic>
+  $ ros2 topic hz <topic>
+  $ ros2 topic info <topic>
+
+
+➢ 通过rqt_graph查看节点间的联系
+
+  $ rqt_graph
+  4. ROS2体验：小海龟仿真
+
+➢ 查看相关信息
+
+
+  $ ros2 node list
+  $ ros2 topic list
+  $ ros2 service list
+  $ ros2 action list
+
+  $ ros2 node info <node>
+  $ ros2 topic echo <topic>
+  $ ros2 topic hz <topic>
+  $ ros2 topic info <topic>
+
+
+
+➢ 通过rqt_graph查看节点间的联系
+
+  $ rqt_graph
+ 4. ROS2体验：小海龟仿真
+
+➢ 查看相关信息
+
+
+  $ ros2 node list
+  $ ros2 topic list
+  $ ros2 service list
+  $ ros2 action list
+
+  $ ros2 node info <node>
+  $ ros2 topic info <topic>
+  $ ros2 interface show <msg>
+  $ ros2 topic echo <topic>
+  $ ros2 topic hz <topic>
+ 4. ROS2体验：小海龟仿真
+
+➢ 查看相关信息
+
+
+  $ ros2 node list
+  $ ros2 topic list
+  $ ros2 service list
+  $ ros2 action list
+
+  $ ros2 node info <node>
+  $ ros2 topic info <topic>
+  $ ros2 interface show <msg>
+  $ ros2 topic echo <topic>
+  $ ros2 topic hz <topic>
+ 感谢倾听
+Thanks for Listening
+
